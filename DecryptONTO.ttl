@@ -1,0 +1,136 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix decryptonto: <http://example.com/decryptonto#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix schema: <http://schema.org/> .
+@prefix crm: <http://www.cidoc-crm.org/cidoc-crm/> .
+
+decryptonto:Record a rdfs:Class ;
+    rdfs:label "Record" ;
+    rdfs:comment "A document or record in the decryption database" ;
+    rdfs:sameAs schema:CreativeWork ;
+    rdfs:sameAs crm:E22_Human-Made_Object .
+
+decryptonto:hasID a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The unique identifier of the record" ;
+    rdfs:sameAs dc:identifier .
+
+decryptonto:hasName a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The name or title of the record" ;
+    rdfs:sameAs dc:title ;
+    rdfs:sameAs crm:P102_has_title .
+
+decryptonto:hasCurrentCountry a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The country where the record is currently located" ;
+    rdfs:sameAs schema:countryOfOrigin .
+
+decryptonto:hasCurrentCity a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The city where the record is currently located" ;
+    rdfs:sameAs schema:city .
+
+decryptonto:hasCurrentHolder a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The current holder or custodian of the record" ;
+    rdfs:sameAs dcterms:rightsHolder ;
+    rdfs:sameAs crm:P52_has_current_owner .
+
+decryptonto:hasAdditionalInformation a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Additional information or notes about the record" ;
+    rdfs:sameAs dc:description ;
+    rdfs:sameAs crm:P3_has_note .
+
+decryptonto:hasNumberOfPages a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "The number of pages in the record" ;
+    rdfs:sameAs schema:numberOfPages .
+
+decryptonto:hasCleartextLanguage a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The language of the cleartext in the record" ;
+    rdfs:sameAs dc:language ;
+    rdfs:sameAs crm:P72_has_language .
+
+decryptonto:hasAuthor a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The author of the record" ;
+    rdfs:sameAs dc:creator .
+
+decryptonto:hasCreationDate a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "The date when the record was created" ;
+    rdfs:sameAs dc:created .
+
+decryptonto:hasPrivateCiphertext a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates whether the record contains private ciphertext" .
+
+decryptonto:hasCipherTypes a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The types of ciphers used in the record" .
+
+decryptonto:hasSymbolSets a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The symbol sets used in the record" .
+
+decryptonto:hasStatus a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The current status of the record" ;
+    rdfs:sameAs schema:status .
+
+decryptonto:hasRecordType a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The type of the record" ;
+    rdfs:sameAs dc:type .
+
+decryptonto:hasAccessMode a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:string ;
+    rdfs:comment "The access mode of the record" ;
+    rdfs:sameAs schema:accessMode .
+
+decryptonto:hasStartYear a rdf:Property ;
+    rdfs:domain decryptonto:Record ;
+    rdfs:range xsd:integer ;
+    rdfs:comment "The start year associated with the record's content" .
+
+# Example instance (unchanged)
+#decryptonto:Codice_Amadi_1269 a decryptonto:Record ;
+   # decryptonto:hasID "8050" ;
+   # decryptonto:hasName "Codice_Amadi_1269" ;
+   # decryptonto:hasCurrentCountry "Italy" ;
+   # decryptonto:hasCurrentCity "Venice" ;
+   # decryptonto:hasCurrentHolder "Venezia, Inquisitori di Stato, Codice Amadi, reg. 1269" ;
+   # decryptonto:hasAdditionalInformation "The image is not in the public domain. Publishing it is only possible with the permission of the Archive." ;
+   # decryptonto:hasNumberOfPages 347 ;
+   # decryptonto:hasCleartextLanguage "Italian" ;
+   # decryptonto:hasAuthor "Agostino Amadi" ;
+   # decryptonto:hasCreationDate "2024-05-15T08:28:34"^^xsd:dateTime ;
+   #  decryptonto:hasPrivateCiphertext true ;
+   # decryptonto:hasCipherTypes "1,2,6" ;
+   # decryptonto:hasSymbolSets "8,3,1" ;
+   # decryptonto:hasStatus "4" ;
+   # decryptonto:hasRecordType "2" ;
+   # decryptonto:hasAccessMode "0" ;
+   # decryptonto:hasStartYear 1269 .
