@@ -3,7 +3,7 @@ from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import RDF, RDFS, XSD
 from datetime import datetime
 
-DECRYPTONTO = Namespace("https://w3id.org/decryptonto#")
+DECRYPTONTO = Namespace("https://de-crypt.org/r/")
 
 def create_ontology():
     g = Graph()
