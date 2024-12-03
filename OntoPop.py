@@ -45,7 +45,7 @@ def populate_ontology(g, data):
             'symbol_sets': (DECRYPTONTO.hasSymbolSets, XSD.string),
             'status': (DECRYPTONTO.hasStatus, XSD.string),
             'record_type': (DECRYPTONTO.hasRecordType, XSD.string),
-            'access_mode': (DECRYPTONTO.hasAccessMode, XSD.string),
+            #'access_mode': (DECRYPTONTO.hasAccessMode, XSD.string),
             'start_year': (DECRYPTONTO.hasStartYear, XSD.integer)
         }
 
@@ -74,7 +74,7 @@ def main():
     g = populate_ontology(g, data)
     
     # Save the populated ontology
-    g.serialize(destination="populated_decryptonto.ttl", format="turtle")
+    g.serialize(destination="populated_decryptontology.ttl", format="turtle")
 
 if __name__ == "__main__":
     main()
