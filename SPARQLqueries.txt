@@ -1,0 +1,265 @@
+1. Retrieve all non-resolved ciphers in France between the xvi-nth and the xviii-nth century.
+
+PREFIX decryptonto: <https://de-crypt.org/r/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?record ?name ?year ?status
+WHERE {
+  ?record rdf:type decryptonto:Record ;
+          decryptonto:hasName ?name ;
+          decryptonto:hasStartYear ?year ;
+          decryptonto:hasStatus ?status ;
+          decryptonto:hasCurrentCountry "France" .
+  
+  # Filter for 16th to 18th century (1500-1799)
+  FILTER (?year >= 1500 && ?year <= 1799)
+  
+  # Filter for non-resolved status
+  FILTER (?status != "4") # Assuming "4" represents "resolved" status
+  
+  # Optional: If you have a specific property for cipher status
+  OPTIONAL {
+    ?record decryptonto:hasCipherStatus ?cipherStatus .
+    FILTER (?cipherStatus != "resolved")
+  }
+}
+ORDER BY ?year
+
+
+2. Retrieve all solved ciphers in the Republic of Venice.
+
+
+PREFIX decryptonto: <https://de-crypt.org/r/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?record ?name ?year ?status
+WHERE {
+  ?record rdf:type decryptonto:Record ;
+          decryptonto:hasName ?name ;
+          decryptonto:hasStartYear ?year ;
+          decryptonto:hasStatus ?status .
+  
+  # Check for Venice as location
+  {
+    ?record decryptonto:hasCurrentCountry ?country .
+    FILTER(REGEX(?country, "Venice|Venezia", "i"))
+  } UNION {
+    ?record decryptonto:hasCurrentCity ?city .
+    FILTER(REGEX(?city, "Venice|Venezia", "i"))
+  }
+  
+  # Filter for solved status
+  FILTER(?status = "4" || REGEX(?status, "solved|decrypted", "i"))
+  
+  # Optional: Check for additional solved indicators if they exist
+  OPTIONAL {
+    ?record decryptonto:hasSolvedStatus ?solvedStatus .
+    FILTER(?solvedStatus = true)
+  }
+}
+ORDER BY ?year
+
+3. Retrieve all non-solved cipher belonging to the Vatican.
+
+PREFIX decryptonto: <https://de-crypt.org/r/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?record ?name ?year ?status ?author ?country
+WHERE {
+  ?record rdf:type decryptonto:Record ;
+          decryptonto:hasName ?name ;
+          decryptonto:hasStartYear ?year ;
+          decryptonto:hasStatus ?status .
+  
+  # Check for Vatican as location
+  {
+    ?record decryptonto:hasCurrentCountry ?country .
+    FILTER(REGEX(?country, "Vatican|Holy See|Papal States", "i"))
+  } UNION {
+    ?record decryptonto:hasCurrentCity ?city .
+    FILTER(REGEX(?city, "Vatican|Rome", "i"))
+  } UNION {
+    ?record decryptonto:hasCurrentHolder ?holder .
+    FILTER(REGEX(?holder, "Vatican|Pope|Holy See", "i"))
+  }
+  
+  # Filter for non-solved status
+  FILTER(?status != "4" && !REGEX(?status, "solved|decrypted", "i"))
+  
+  # Optional: Include author information if available
+  OPTIONAL {
+    ?record decryptonto:hasAuthor ?author .
+  }
+  
+  # Optional: Check for additional unsolved indicators if they exist
+  OPTIONAL {
+    ?record decryptonto:hasSolvedStatus ?solvedStatus .
+    FILTER(?solvedStatus = false)
+  }
+}
+ORDER BY ?year
+
+4. Retrieve all unresolved ciphers from an European country that was also involved in a war during the seventeenth century (federated query).
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX decryptonto: <https://de-crypt.org/r/>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbr: <http://dbpedia.org/resource/>
+
+SELECT DISTINCT ?cipherName ?country ?warName ?warYear
+WHERE {
+  # Query the DECRYPT ontology for unresolved ciphers
+  ?cipher rdf:type decryptonto:Record ;
+          decryptonto:hasName ?cipherName ;
+          decryptonto:hasCurrentCountry ?country ;
+          decryptonto:hasStatus ?status .
+  
+  # Filter for unresolved ciphers (status not 4)
+  FILTER(?status != "4")
+  
+  # Federated query to DBpedia for wars
+  SERVICE <http://dbpedia.org/sparql> {
+    # Get the DBpedia resource for the country
+    ?countryResource rdf:type dbo:Country ;
+                    rdfs:label ?countryLabel ;
+                    dbo:continent dbr:Europe .
+    
+    # Match country names (case-insensitive)
+    FILTER(LANG(?countryLabel) = "en")
+    FILTER(LCASE(STR(?countryLabel)) = LCASE(?country))
+    
+    # Find wars involving this country
+    ?war rdf:type dbo:MilitaryConflict ;
+         dbo:participant ?countryResource ;
+         rdfs:label ?warName ;
+         dbo:date ?date .
+         
+    # Filter for wars in the 17th century
+    BIND(YEAR(?date) AS ?warYear)
+    FILTER(?warYear >= 1600 && ?warYear < 1700)
+    FILTER(LANG(?warName) = "en")
+  }
+}
+ORDER BY ?country ?warYear
+LIMIT 100
+
+5. Distribution of cipher types across centuries.
+
+PREFIX decryptonto: <https://de-crypt.org/r/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?century (COUNT(DISTINCT ?cipher) AS ?count) (GROUP_CONCAT(DISTINCT ?cipherType; SEPARATOR=", ") AS ?types)
+WHERE {
+  ?cipher decryptonto:hasStartYear ?year ;
+          decryptonto:hasCipherTypes ?cipherType .
+  BIND(CONCAT(STR(FLOOR(?year/100)*100), "s") AS ?century)
+}
+GROUP BY ?century
+ORDER BY ?century
+
+
+6. Authors who created ciphers in multiple countries.
+
+PREFIX decryptonto: <https://de-crypt.org/r/>
+
+SELECT ?author (COUNT(DISTINCT ?country) AS ?countryCount) (GROUP_CONCAT(DISTINCT ?country; SEPARATOR=", ") AS ?countries)
+WHERE {
+  ?cipher decryptonto:hasAuthor ?author ;
+          decryptonto:hasCurrentCountry ?country .
+  FILTER(?author != "")
+}
+GROUP BY ?author
+HAVING (?countryCount > 1)
+ORDER BY DESC(?countryCount)
+
+7. Geospatial distribution of ciphers.
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX decryptonto: <https://de-crypt.org/r/>
+
+SELECT ?country (COUNT(?cipher) as ?numberOfCiphers)
+WHERE {
+  ?cipher rdf:type decryptonto:Record ;
+         decryptonto:hasCurrentCountry ?country .
+}
+GROUP BY ?country
+ORDER BY DESC(?numberOfCiphers)
+
+DIGITAL HISTORIAN PERSONA
+
+PREFIX decryptonto: <https://de-crypt.org/r/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbr: <http://dbpedia.org/resource/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX schema: <http://schema.org/>
+
+8. Geographical Spread of Cipher Usage Over Time.
+
+SELECT ?period ?region (COUNT(DISTINCT ?cipher) AS ?cipherCount)
+WHERE {
+  ?cipher decryptonto:hasStartYear ?year ;
+          decryptonto:hasCurrentCountry ?country .
+  
+  # Define historical periods
+  BIND(
+    IF(?year < 1500, "Medieval",
+      IF(?year < 1700, "Early Modern",
+        IF(?year < 1900, "Modern", "Contemporary")
+      )
+    ) AS ?period
+  )
+  
+  # Group countries into regions (simplified)
+  BIND(
+    IF(REGEX(?country, "France|Spain|Italy|Germany", "i"), "Western Europe",
+      IF(REGEX(?country, "England|Scotland|Ireland", "i"), "British Isles",
+        IF(REGEX(?country, "Russia|Poland|Hungary", "i"), "Eastern Europe",
+          "Other"
+        )
+      )
+    ) AS ?region
+  )
+}
+GROUP BY ?period ?region
+ORDER BY ?period ?region
+
+9. Cross-Cultural Comparison of Cipher Complexity.
+
+SELECT ?culture ?avgSymbolSetSize ?maxSymbolSetSize
+WHERE {
+  {
+    SELECT ?culture (AVG(?symbolSetSize) AS ?avgSymbolSetSize) (MAX(?symbolSetSize) AS ?maxSymbolSetSize)
+    WHERE {
+      ?cipher decryptonto:hasCurrentCountry ?country ;
+              decryptonto:hasSymbolSets ?symbolSets .
+      
+      # Simplified culture grouping
+      BIND(
+        IF(REGEX(?country, "China|Japan|Korea", "i"), "East Asian",
+          IF(REGEX(?country, "Arabia|Persia|Ottoman", "i"), "Islamic",
+            IF(REGEX(?country, "Italy|France|Spain", "i"), "Latin",
+              IF(REGEX(?country, "England|Germany|Netherlands", "i"), "Germanic",
+                "Other"
+              )
+            )
+          )
+        ) AS ?culture
+      )
+      
+      # Assuming symbolSets is a comma-separated list, count the items
+      BIND(1 + STRLEN(?symbolSets) - STRLEN(REPLACE(?symbolSets, ",", "")) AS ?symbolSetSize)
+    }
+    GROUP BY ?culture
+  }
+}
+ORDER BY DESC(?avgSymbolSetSize)
