@@ -68,13 +68,12 @@ def populate_ontology(g, data):
 
     return g
 
-def main():
-    g = create_ontology()
-    data = load_data('decode_records_detailed.json')
-    g = populate_ontology(g, data)
-    
-    # Save the populated ontology
-    g.serialize(destination="populated_decryptontology.ttl", format="turtle")
 
-if __name__ == "__main__":
-    main()
+g = create_ontology()
+data = load_data('decode_records_detailed.json')
+g = populate_ontology(g, data)
+
+# Save the populated ontology
+g.serialize(destination="populated_decryptontology.ttl", format="turtle")
+
+
