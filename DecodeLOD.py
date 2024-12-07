@@ -63,33 +63,22 @@ def save_to_json(data: List[Dict], filename: str):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def main():
-    table = "records"
-    summary_filename = "decode_records_summary.json"
-    detailed_filename = "decode_records_detailed.json"
-    
-    try:
-        # print(f"Fetching all records from the '{table}' table...")
-        # records_summary = fetch_all_records(table)
-        # print(f"Fetched {len(records_summary)} record summaries.")
-        
-        # print(f"Saving record summaries to {summary_filename}...")
-        # save_to_json(records_summary, summary_filename)
-        
-        records_summary = fetch_all_records(table)
-        print("Fetching detailed information for each record...")
-        detailed_records = fetch_all_record_details(table, records_summary)
-        print(f"Fetched details for {len(detailed_records)} records.")
-        
-        print(f"Saving detailed records to {detailed_filename}...")
-        save_to_json(detailed_records, detailed_filename)
-        
-        print("Done!")
-    
-    except requests.RequestException as e:
-        print(f"An error occurred while fetching data: {e}")
-    except IOError as e:
-        print(f"An error occurred while saving the file: {e}")
+table = "records"
+summary_filename = "decode_records_summary.json"
+detailed_filename = "decode_records_detailed.json"
 
-if __name__ == "__main__":
-    main()
+try:      
+    records_summary = fetch_all_records(table)
+    print("Fetching detailed information for each record...")
+    detailed_records = fetch_all_record_details(table, records_summary)
+    print(f"Fetched details for {len(detailed_records)} records.")
+    
+    print(f"Saving detailed records to {detailed_filename}...")
+    save_to_json(detailed_records, detailed_filename)
+    
+    print("Done!")
+
+except requests.RequestException as e:
+    print(f"An error occurred while fetching data: {e}")
+except IOError as e:
+    print(f"An error occurred while saving the file: {e}")
